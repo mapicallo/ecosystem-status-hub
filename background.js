@@ -1,16 +1,42 @@
 const PANEL_PATH = "panel/panel.html";
 const STORAGE_KEY = "hubPanelWindowId";
 
+/** In-memory fallback if storage APIs are unavailable (should not happen with manifest permissions). */
+let memoryPanelWindowId = null;
+
+function sessionArea() {
+  return chrome.storage?.session;
+}
+
 async function getStoredWindowId() {
-  const s = await chrome.storage.session.get(STORAGE_KEY);
-  return s[STORAGE_KEY] ?? null;
+  const area = sessionArea();
+  if (!area) {
+    return memoryPanelWindowId;
+  }
+  try {
+    const s = await area.get(STORAGE_KEY);
+    return s[STORAGE_KEY] ?? null;
+  } catch (e) {
+    console.warn("[Ecosystem Status Hub] session get failed", e);
+    return memoryPanelWindowId;
+  }
 }
 
 async function setStoredWindowId(id) {
-  if (id == null) {
-    await chrome.storage.session.remove(STORAGE_KEY);
-  } else {
-    await chrome.storage.session.set({ [STORAGE_KEY]: id });
+  memoryPanelWindowId = id;
+  const area = sessionArea();
+  if (!area) {
+    console.warn("[Ecosystem Status Hub] chrome.storage.session missing; using memory only");
+    return;
+  }
+  try {
+    if (id == null) {
+      await area.remove(STORAGE_KEY);
+    } else {
+      await area.set({ [STORAGE_KEY]: id });
+    }
+  } catch (e) {
+    console.warn("[Ecosystem Status Hub] session set failed", e);
   }
 }
 
