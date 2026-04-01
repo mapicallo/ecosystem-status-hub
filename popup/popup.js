@@ -347,7 +347,22 @@ function initCustomLinksForm() {
   });
 }
 
+function setExtensionVersionLabel() {
+  const el = document.getElementById("extension-version");
+  if (!el || typeof chrome === "undefined" || !chrome.runtime?.getManifest) return;
+  try {
+    const v = chrome.runtime.getManifest().version;
+    if (v) {
+      el.textContent = `Extension version ${v}`;
+      el.title = "Matches the installed package (manifest.json).";
+    }
+  } catch {
+    /* ignore */
+  }
+}
+
 async function load() {
+  setExtensionVersionLabel();
   initCustomLinksForm();
   await refreshDirectory();
 }

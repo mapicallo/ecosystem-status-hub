@@ -216,3 +216,13 @@ details[open] > .family-summary .chevron {
   color: var(--muted);
   opacity: 0.85;
 }
+
+.extension-version {
+  margin: 10px 0 0;
+  padding-top: 8px;
+  border-top: 1px solid rgba(42, 58, 82, 0.55);
+  font-size: 10px;
+  letter-spacing: 0.04em;
+  color: var(--muted);
+  opacity: 0.92;
+}
