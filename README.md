@@ -46,11 +46,17 @@ If your Python install fails TLS verification for a specific host, you can run `
 
 Exits with code 1 if any URL fails (connection error or HTTP status outside 200–399). Automated checks can still hit `403` from WAFs despite working in a real browser.
 
-## Store submission
+## Store package (Chrome / Edge)
 
-- Icons: `icons/icon-*.png`
-- Host a public **privacy policy** (see [`docs/PRIVACY.md`](docs/PRIVACY.md)); GitHub-rendered copy is enough for many submissions.
-- Package a **zip** of the extension root (manifest at root, no `.git`).
+Build a submission ZIP named **`ecosystem-status-hub-<version>.zip`** (version taken from `manifest.json`):
+
+```powershell
+.\scripts\package-store.ps1
+```
+
+Output: **`dist/ecosystem-status-hub-<version>.zip`** — manifest at the root of the archive, no dev folders.
+
+See **[`docs/STORE-SUBMISSION.md`](docs/STORE-SUBMISSION.md)** for the full checklist (privacy URL, permission justification, screenshots).
 
 ## License
 
