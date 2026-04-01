@@ -19,7 +19,11 @@ async function focusOrOpenPanel() {
   if (existingId != null) {
     try {
       await chrome.windows.get(existingId);
-      await chrome.windows.update(existingId, { focused: true });
+      await chrome.windows.update(existingId, {
+        focused: true,
+        drawAttention: true,
+        state: "normal",
+      });
       return;
     } catch {
       await setStoredWindowId(null);
@@ -40,13 +44,17 @@ async function focusOrOpenPanel() {
 }
 
 chrome.action.onClicked.addListener(() => {
-  focusOrOpenPanel().catch(() => {});
+  focusOrOpenPanel().catch((err) => {
+    console.error("[Ecosystem Status Hub]", err);
+  });
 });
 
 chrome.windows.onRemoved.addListener((windowId) => {
-  getStoredWindowId().then((id) => {
-    if (id === windowId) {
-      return setStoredWindowId(null);
-    }
-  }).catch(() => {});
+  getStoredWindowId()
+    .then((id) => {
+      if (id === windowId) {
+        return setStoredWindowId(null);
+      }
+    })
+    .catch((err) => console.error("[Ecosystem Status Hub] onRemoved", err));
 });

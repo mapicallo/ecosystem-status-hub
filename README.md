@@ -10,7 +10,9 @@ Browser extension (Manifest V3) with **curated links** to official provider stat
 
 ## Floating panel
 
-Click the toolbar icon to open a **separate window** (not the old in-toolbar popup). You can **move** it by the native window title bar, **resize** it from the edges, and **close** it with the window close control or the **×** button in the header. Links still open in your normal browser tabs (`target="_blank"`), so the hub stays open.
+Click the **toolbar (puzzle-pin) icon** for this extension to open a **separate window** — choosing the row in `chrome://extensions` only opens settings, not the hub. The first install may ask for the **“windows”** permission so the extension can open and focus that window.
+
+You can **move** the hub by the native window title bar, **resize** it from the edges, and **close** it with the window close control or the **×** in the header. Links open in normal tabs (`target="_blank"`), so the hub stays open.
 
 If the panel is already open, the toolbar icon **focuses** that window instead of opening a second one.
 
