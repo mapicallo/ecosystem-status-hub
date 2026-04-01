@@ -10,6 +10,8 @@ Ecosystem Status Hub is a **link directory**. It shows public URLs you can open 
 
 We do **not** collect any data through this extension.
 
+Optional links you save yourself are stored **only in your browser** (`chrome.storage.local`) and never leave your device except when you open them in a normal tab like any other bookmark.
+
 ## Third-party sites
 
 When you click a link, your browser opens that website under **that site’s** own terms and privacy policy. We do not control those sites.

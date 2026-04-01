@@ -16,6 +16,10 @@ You can **move** the hub by the native window title bar, **resize** it from the 
 
 If the panel is already open, the toolbar icon **focuses** that window instead of opening a second one.
 
+## Your own links
+
+Use **Your links → Add** to save entries under any section. You can **Edit** or **Remove** them from each row (badge “Yours”). Data is kept in `chrome.storage.local` on this browser only; it is not synced or sent anywhere.
+
 ## Data
 
 - Link directory: [`data/links.json`](data/links.json) (`id`, `family`, `title`, `url`, `sourceType`).

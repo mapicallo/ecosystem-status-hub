@@ -19,11 +19,40 @@
     </div>
     <p class="window-hint">Drag the title bar to move. Resize from any edge.</p>
   </header>
-  <main id="root" class="main" aria-busy="true"></main>
+  <div class="body-scroll">
+    <section class="custom-links-ui" id="custom-links-ui" aria-label="Your custom links">
+      <div class="custom-links-bar">
+        <span class="custom-links-label">Your links</span>
+        <button type="button" class="btn btn-small" id="toggle-custom-form">Add</button>
+      </div>
+      <div class="custom-form" id="custom-form" hidden>
+        <input type="hidden" id="custom-edit-id" value="" />
+        <div class="field">
+          <label class="field-label" for="custom-family">Section</label>
+          <select id="custom-family" class="field-control"></select>
+        </div>
+        <div class="field">
+          <label class="field-label" for="custom-title">Title</label>
+          <input type="text" id="custom-title" class="field-control" autocomplete="off" />
+        </div>
+        <div class="field">
+          <label class="field-label" for="custom-url">URL</label>
+          <input type="text" id="custom-url" class="field-control" placeholder="https://…" autocomplete="off" spellcheck="false" />
+        </div>
+        <p class="form-error" id="custom-form-error" hidden></p>
+        <div class="custom-form-actions">
+          <button type="button" class="btn btn-primary" id="custom-save">Save</button>
+          <button type="button" class="btn" id="custom-cancel">Cancel</button>
+        </div>
+      </div>
+    </section>
+    <main id="root" class="main" aria-busy="true"></main>
+  </div>
   <footer class="footer">
     <p class="disclaimer">
       Directory of public links only. The authoritative source is always each provider.
       This extension does not access or monitor your network.
+      Links you add are stored only on this device in this browser.
     </p>
     <p class="meta" id="meta-line" hidden></p>
   </footer>
