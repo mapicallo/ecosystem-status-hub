@@ -130,6 +130,12 @@ const MESSAGES = {
     es: "Coincide con el paquete instalado (manifest.json).",
   },
 
+  "brand.footerAria": {
+    en: "AI4Context — open website",
+    es: "AI4Context — abrir sitio web",
+  },
+  "brand.byPrefix": { en: "by", es: "por" },
+
   "meta.snapshot": {
     en: "Data snapshot: {date}",
     es: "Instantánea de datos: {date}",

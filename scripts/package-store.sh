@@ -24,7 +24,7 @@ STAGING="$DIST/staging-$VER"
 rm -rf "$STAGING"
 mkdir -p "$STAGING"
 
-for item in manifest.json background.js data icons panel popup LICENSE; do
+for item in manifest.json background.js brand data icons panel popup LICENSE; do
   if [[ -e "$ROOT/$item" ]]; then
     cp -R "$ROOT/$item" "$STAGING/"
   else

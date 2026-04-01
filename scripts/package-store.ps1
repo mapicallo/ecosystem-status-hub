@@ -29,6 +29,7 @@ New-Item -ItemType Directory -Force -Path $Staging | Out-Null
 $items = @(
   "manifest.json",
   "background.js",
+  "brand",
   "data",
   "icons",
   "panel",

@@ -442,6 +442,12 @@ function applyStaticI18n() {
   const disc = document.getElementById("footer-disclaimer");
   if (disc) disc.textContent = t("footer.disclaimer");
 
+  const brandFooter = document.getElementById("a4c-brand-footer");
+  if (brandFooter) brandFooter.setAttribute("aria-label", t("brand.footerAria"));
+
+  const byPrefix = document.getElementById("a4c-brand-by-prefix");
+  if (byPrefix) byPrefix.textContent = t("brand.byPrefix");
+
   const langSel = document.getElementById("ui-lang");
   if (langSel) langSel.setAttribute("aria-label", t("lang.label"));
 
