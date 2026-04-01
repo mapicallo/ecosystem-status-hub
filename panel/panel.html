@@ -11,32 +11,39 @@
     <div class="header-top">
       <div class="header-titles">
         <h1 class="title">Ecosystem Status Hub</h1>
-        <p class="tagline">Official status pages &amp; public Internet health signals</p>
+        <p class="tagline" id="header-tagline">Official status pages &amp; public Internet health signals</p>
       </div>
       <button type="button" class="close-btn" id="close-panel" aria-label="Close window" title="Close">
         <span aria-hidden="true">×</span>
       </button>
     </div>
-    <p class="window-hint">Drag the title bar to move. Resize from any edge.</p>
+    <div class="lang-toolbar">
+      <label class="lang-label" id="lang-label" for="ui-lang">Language</label>
+      <select id="ui-lang" class="field-control lang-select" aria-label="Language">
+        <option value="en">English</option>
+        <option value="es">Español</option>
+      </select>
+    </div>
+    <p class="window-hint" id="window-hint">Drag the title bar to move. Resize from any edge.</p>
   </header>
   <div class="body-scroll">
     <section class="custom-links-ui" id="custom-links-ui" aria-label="Your custom links">
       <div class="custom-links-bar">
-        <span class="custom-links-label">Your links</span>
+        <span class="custom-links-label" id="custom-links-label">Your links</span>
         <button type="button" class="btn btn-small" id="toggle-custom-form">Add</button>
       </div>
       <div class="custom-form" id="custom-form" hidden>
         <input type="hidden" id="custom-edit-id" value="" />
         <div class="field">
-          <label class="field-label" for="custom-family">Section</label>
+          <label class="field-label" for="custom-family" id="label-custom-family">Section</label>
           <select id="custom-family" class="field-control"></select>
         </div>
         <div class="field">
-          <label class="field-label" for="custom-title">Title</label>
+          <label class="field-label" for="custom-title" id="label-custom-title">Title</label>
           <input type="text" id="custom-title" class="field-control" autocomplete="off" />
         </div>
         <div class="field">
-          <label class="field-label" for="custom-url">URL</label>
+          <label class="field-label" for="custom-url" id="label-custom-url">URL</label>
           <input type="text" id="custom-url" class="field-control" placeholder="https://…" autocomplete="off" spellcheck="false" />
         </div>
         <p class="form-error" id="custom-form-error" hidden></p>
@@ -49,7 +56,7 @@
     <main id="root" class="main" aria-busy="true"></main>
   </div>
   <footer class="footer">
-    <p class="disclaimer">
+    <p class="disclaimer" id="footer-disclaimer">
       Directory of public links only. The authoritative source is always each provider.
       This extension does not access or monitor your network.
       Links you add are stored only on this device in this browser.

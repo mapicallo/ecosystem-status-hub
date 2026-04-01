@@ -1,3 +1,11 @@
+import {
+  STORAGE_KEY_UI_LANG,
+  defaultLangFromNavigator,
+  isSupportedLang,
+  translate,
+  badgeKeyForSourceType,
+} from "./i18n.js";
+
 const FAMILY_ORDER = [
   "internet",
   "dns",
@@ -10,18 +18,6 @@ const FAMILY_ORDER = [
   "security",
 ];
 
-const FAMILY_LABELS = {
-  internet: "Internet & routing",
-  dns: "DNS",
-  cdn: "CDN & edge",
-  cloud: "Cloud & hosting",
-  dev: "Developer platforms",
-  saas: "SaaS, identity & collaboration",
-  payments: "Payments",
-  ai: "AI & APIs",
-  security: "Observability & security reference",
-};
-
 const BADGE_CLASS = {
   official: "badge-official",
   academic: "badge-academic",
@@ -32,21 +28,11 @@ const BADGE_CLASS = {
 
 const STORAGE_KEY_CUSTOM = "customLinks";
 
-function badgeLabel(sourceType) {
-  switch (sourceType) {
-    case "official":
-      return "Official";
-    case "academic":
-      return "Research";
-    case "trusted-third":
-      return "3rd party";
-    case "aggregator":
-      return "Aggregator";
-    case "custom":
-      return "Yours";
-    default:
-      return sourceType;
-  }
+/** @type {"en" | "es"} */
+let uiLang = "en";
+
+function t(key, vars) {
+  return translate(uiLang, key, vars);
 }
 
 function newCustomId() {
@@ -57,10 +43,10 @@ function newCustomId() {
 
 /** @returns {string | null} */
 function normalizeUrl(input) {
-  const t = String(input).trim();
-  if (!t) return null;
+  const raw = String(input).trim();
+  if (!raw) return null;
   try {
-    const withProto = t.includes("://") ? t : `https://${t}`;
+    const withProto = raw.includes("://") ? raw : `https://${raw}`;
     const u = new URL(withProto);
     if (u.protocol !== "http:" && u.protocol !== "https:") return null;
     return u.href;
@@ -110,6 +96,16 @@ async function setCustomLinks(list) {
   await chrome.storage.local.set({ [STORAGE_KEY_CUSTOM]: list });
 }
 
+async function loadUiLanguage() {
+  const r = await chrome.storage.local.get(STORAGE_KEY_UI_LANG);
+  const stored = r[STORAGE_KEY_UI_LANG];
+  if (isSupportedLang(stored)) {
+    uiLang = stored;
+    return;
+  }
+  uiLang = defaultLangFromNavigator();
+}
+
 function render(root, payload) {
   const { links, meta } = payload;
   const byFamily = groupByFamily(links);
@@ -127,7 +123,7 @@ function render(root, payload) {
     const summary = document.createElement("summary");
     summary.className = "family-summary";
     const label = document.createElement("span");
-    label.textContent = FAMILY_LABELS[familyId] ?? familyId;
+    label.textContent = t(`family.${familyId}`);
     const chev = document.createElement("span");
     chev.className = "chevron";
     chev.setAttribute("aria-hidden", "true");
@@ -143,8 +139,9 @@ function render(root, payload) {
       const badge = document.createElement("span");
       const bClass = BADGE_CLASS[item.sourceType] ?? "";
       badge.className = `badge ${bClass}`.trim();
-      badge.textContent = badgeLabel(item.sourceType);
-      badge.title = item.sourceType;
+      const bKey = badgeKeyForSourceType(item.sourceType);
+      badge.textContent = t(bKey);
+      badge.title = t(bKey);
 
       const a = document.createElement("a");
       a.href = item.url;
@@ -163,12 +160,12 @@ function render(root, payload) {
         const editBtn = document.createElement("button");
         editBtn.type = "button";
         editBtn.className = "btn btn-ghost";
-        editBtn.textContent = "Edit";
+        editBtn.textContent = t("custom.edit");
         editBtn.addEventListener("click", () => startEditCustom(item));
         const delBtn = document.createElement("button");
         delBtn.type = "button";
         delBtn.className = "btn btn-danger";
-        delBtn.textContent = "Remove";
+        delBtn.textContent = t("custom.remove");
         delBtn.addEventListener("click", () => removeCustom(item.customId));
         actions.append(editBtn, delBtn);
         row.appendChild(actions);
@@ -183,7 +180,7 @@ function render(root, payload) {
   const metaLine = document.getElementById("meta-line");
   if (meta?.lastVerified && metaLine) {
     metaLine.hidden = false;
-    metaLine.textContent = `Data snapshot: ${meta.lastVerified}`;
+    metaLine.textContent = t("meta.snapshot", { date: meta.lastVerified });
   }
 }
 
@@ -203,25 +200,44 @@ async function refreshDirectory() {
   try {
     const dataUrl = chrome.runtime.getURL("data/links.json");
     const res = await fetch(dataUrl);
-    if (!res.ok) throw new Error(`Failed to load links (${res.status})`);
+    if (!res.ok) throw new Error(`LOAD_HTTP:${res.status}`);
     const data = await res.json();
-    if (!Array.isArray(data.links)) throw new Error("Invalid links data");
+    if (!Array.isArray(data.links)) throw new Error("INVALID_DATA");
     const custom = await getCustomLinks();
     const merged = buildMergedList(data.links, custom);
     render(root, { links: merged, meta: data.meta });
   } catch (e) {
-    renderError(root, e instanceof Error ? e.message : "Could not load directory.");
+    let msg = t("error.generic");
+    if (e instanceof Error) {
+      if (e.message.startsWith("LOAD_HTTP:")) {
+        const status = e.message.split(":")[1] ?? "?";
+        msg = t("error.loadHttp", { status });
+      } else if (e.message === "INVALID_DATA") {
+        msg = t("error.invalidData");
+      }
+    }
+    renderError(root, msg);
   }
 }
 
 /** @type {boolean} */
 let customFormInitialized = false;
 
+/** @type {boolean} */
+let langSelectorInitialized = false;
+
 function showFormError(msg) {
   const el = document.getElementById("custom-form-error");
   if (!el) return;
   el.hidden = !msg;
   el.textContent = msg || "";
+}
+
+function syncToggleCustomButton() {
+  const formEl = document.getElementById("custom-form");
+  const toggle = document.getElementById("toggle-custom-form");
+  if (!formEl || !toggle) return;
+  toggle.textContent = formEl.hidden ? t("custom.add") : t("custom.hide");
 }
 
 function resetCustomForm() {
@@ -234,19 +250,20 @@ function resetCustomForm() {
   if (urlEl) urlEl.value = "";
   showFormError("");
   if (formEl) formEl.hidden = true;
-  const toggle = document.getElementById("toggle-custom-form");
-  if (toggle) toggle.textContent = "Add";
+  syncToggleCustomButton();
 }
 
 function populateFamilySelect(selectEl) {
   if (!selectEl) return;
+  const current = selectEl.value;
   selectEl.innerHTML = "";
   for (const fid of FAMILY_ORDER) {
     const opt = document.createElement("option");
     opt.value = fid;
-    opt.textContent = FAMILY_LABELS[fid] ?? fid;
+    opt.textContent = t(`family.${fid}`);
     selectEl.appendChild(opt);
   }
+  if (current && FAMILY_ORDER.includes(current)) selectEl.value = current;
 }
 
 /** @param {{ customId: string, family: string, title: string, url: string }} item */
@@ -256,7 +273,6 @@ function startEditCustom(item) {
   const famEl = document.getElementById("custom-family");
   const titleEl = document.getElementById("custom-title");
   const urlEl = document.getElementById("custom-url");
-  const toggle = document.getElementById("toggle-custom-form");
   if (!formEl || !editIdEl || !famEl || !titleEl || !urlEl) return;
   editIdEl.value = item.customId;
   famEl.value = item.family;
@@ -264,18 +280,102 @@ function startEditCustom(item) {
   urlEl.value = item.url;
   formEl.hidden = false;
   showFormError("");
-  if (toggle) toggle.textContent = "Hide";
+  const toggle = document.getElementById("toggle-custom-form");
+  if (toggle) toggle.textContent = t("custom.hide");
   formEl.scrollIntoView({ block: "nearest" });
   titleEl.focus();
 }
 
 async function removeCustom(customId) {
   if (!customId) return;
-  const ok = window.confirm("Remove this link from your list?");
+  const ok = window.confirm(t("custom.confirmRemove"));
   if (!ok) return;
   const list = (await getCustomLinks()).filter((x) => x.id !== customId);
   await setCustomLinks(list);
   await refreshDirectory();
+}
+
+function applyStaticI18n() {
+  document.title = t("doc.title");
+
+  const tag = document.getElementById("header-tagline");
+  if (tag) tag.textContent = t("header.tagline");
+
+  const hint = document.getElementById("window-hint");
+  if (hint) hint.textContent = t("header.windowHint");
+
+  const closeBtn = document.getElementById("close-panel");
+  if (closeBtn) {
+    closeBtn.setAttribute("aria-label", t("header.closeAria"));
+    closeBtn.title = t("header.closeTitle");
+  }
+
+  const sec = document.getElementById("custom-links-ui");
+  if (sec) sec.setAttribute("aria-label", t("custom.sectionAria"));
+
+  const bar = document.getElementById("custom-links-label");
+  if (bar) bar.textContent = t("custom.barLabel");
+
+  const ll = document.getElementById("lang-label");
+  if (ll) ll.textContent = t("lang.label");
+
+  const lf = document.getElementById("label-custom-family");
+  if (lf) lf.textContent = t("custom.field.section");
+
+  const lt = document.getElementById("label-custom-title");
+  if (lt) lt.textContent = t("custom.field.title");
+
+  const lu = document.getElementById("label-custom-url");
+  if (lu) lu.textContent = t("custom.field.url");
+
+  const urlIn = document.getElementById("custom-url");
+  if (urlIn) urlIn.placeholder = t("custom.placeholder.url");
+
+  const save = document.getElementById("custom-save");
+  if (save) save.textContent = t("custom.save");
+
+  const cancel = document.getElementById("custom-cancel");
+  if (cancel) cancel.textContent = t("custom.cancel");
+
+  const disc = document.getElementById("footer-disclaimer");
+  if (disc) disc.textContent = t("footer.disclaimer");
+
+  const langSel = document.getElementById("ui-lang");
+  if (langSel) langSel.setAttribute("aria-label", t("lang.label"));
+
+  syncToggleCustomButton();
+}
+
+function initLangSelector() {
+  const sel = document.getElementById("ui-lang");
+  if (!sel || langSelectorInitialized) return;
+  langSelectorInitialized = true;
+  sel.value = uiLang;
+  sel.addEventListener("change", async () => {
+    const v = sel.value;
+    if (!isSupportedLang(v)) return;
+    uiLang = v;
+    await chrome.storage.local.set({ [STORAGE_KEY_UI_LANG]: uiLang });
+    document.documentElement.lang = uiLang;
+    applyStaticI18n();
+    populateFamilySelect(document.getElementById("custom-family"));
+    setExtensionVersionLabel();
+    await refreshDirectory();
+  });
+}
+
+function setExtensionVersionLabel() {
+  const el = document.getElementById("extension-version");
+  if (!el || typeof chrome === "undefined" || !chrome.runtime?.getManifest) return;
+  try {
+    const v = chrome.runtime.getManifest().version;
+    if (v) {
+      el.textContent = t("footer.version", { v });
+      el.title = t("footer.versionTitle");
+    }
+  } catch {
+    /* ignore */
+  }
 }
 
 function initCustomLinksForm() {
@@ -300,7 +400,7 @@ function initCustomLinksForm() {
       document.getElementById("custom-url").value = "";
       showFormError("");
       formEl.hidden = false;
-      toggle.textContent = "Hide";
+      if (toggle) toggle.textContent = t("custom.hide");
       document.getElementById("custom-title")?.focus();
     } else {
       resetCustomForm();
@@ -319,11 +419,11 @@ function initCustomLinksForm() {
     const title = titleEl.value.trim();
     const urlNorm = normalizeUrl(urlEl.value);
     if (!title) {
-      showFormError("Please enter a title.");
+      showFormError(t("custom.err.title"));
       return;
     }
     if (!urlNorm) {
-      showFormError("Enter a valid http(s) URL.");
+      showFormError(t("custom.err.url"));
       return;
     }
     showFormError("");
@@ -347,29 +447,38 @@ function initCustomLinksForm() {
   });
 }
 
-function setExtensionVersionLabel() {
-  const el = document.getElementById("extension-version");
-  if (!el || typeof chrome === "undefined" || !chrome.runtime?.getManifest) return;
-  try {
-    const v = chrome.runtime.getManifest().version;
-    if (v) {
-      el.textContent = `Extension version ${v}`;
-      el.title = "Matches the installed package (manifest.json).";
-    }
-  } catch {
-    /* ignore */
-  }
-}
-
 async function load() {
+  await loadUiLanguage();
+  document.documentElement.lang = uiLang;
+
+  initLangSelector();
+  applyStaticI18n();
   setExtensionVersionLabel();
   initCustomLinksForm();
   await refreshDirectory();
 }
 
 chrome.storage.onChanged.addListener((changes, area) => {
-  if (area !== "local" || !changes[STORAGE_KEY_CUSTOM]) return;
-  refreshDirectory().catch(() => {});
+  if (area !== "local") return;
+
+  const langChange = changes[STORAGE_KEY_UI_LANG];
+  if (langChange) {
+    const nv = langChange.newValue;
+    if (isSupportedLang(nv)) {
+      uiLang = nv;
+      document.documentElement.lang = uiLang;
+      const sel = document.getElementById("ui-lang");
+      if (sel) sel.value = uiLang;
+      applyStaticI18n();
+      populateFamilySelect(document.getElementById("custom-family"));
+      setExtensionVersionLabel();
+      refreshDirectory().catch(() => {});
+    }
+  }
+
+  if (changes[STORAGE_KEY_CUSTOM]) {
+    refreshDirectory().catch(() => {});
+  }
 });
 
 load();

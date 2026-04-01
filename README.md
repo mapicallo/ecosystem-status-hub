@@ -20,6 +20,10 @@ If the panel is already open, the toolbar icon **focuses** that window instead o
 
 Use **Your links → Add** to save entries under any section. You can **Edit** or **Remove** them from each row (badge “Yours”). Data is kept in `chrome.storage.local` on this browser only; it is not synced or sent anywhere.
 
+## Language
+
+Use the **Language** selector (English / Español). The choice is stored in `chrome.storage.local` under `uiLanguage`. With no saved preference, the UI follows the browser locale (`es*` → Spanish, otherwise English).
+
 ## Data
 
 - Link directory: [`data/links.json`](data/links.json) (`id`, `family`, `title`, `url`, `sourceType`).
