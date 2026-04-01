@@ -24,6 +24,10 @@ Use **Your links → Add** to save entries under any section. You can **Edit** o
 
 Use the **Language** selector (English / Español). The choice is stored in `chrome.storage.local` under `uiLanguage`. With no saved preference, the UI follows the browser locale (`es*` → Spanish, otherwise English).
 
+## Search
+
+Use the search field under the header to filter links by **title**, **URL**, or **section name** (in the current language). Clear the field to return to the collapsible sections. **Escape** clears the search box.
+
 ## Data
 
 - Link directory: [`data/links.json`](data/links.json) (`id`, `family`, `title`, `url`, `sourceType`).

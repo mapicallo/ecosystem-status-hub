@@ -13,16 +13,27 @@
         <h1 class="title">Ecosystem Status Hub</h1>
         <p class="tagline" id="header-tagline">Official status pages &amp; public Internet health signals</p>
       </div>
-      <button type="button" class="close-btn" id="close-panel" aria-label="Close window" title="Close">
-        <span aria-hidden="true">×</span>
-      </button>
+      <div class="header-actions">
+        <select id="ui-lang" class="field-control lang-select lang-select--compact" aria-label="Language">
+          <option value="en">EN</option>
+          <option value="es">ES</option>
+        </select>
+        <button type="button" class="close-btn" id="close-panel" aria-label="Close window" title="Close">
+          <span aria-hidden="true">×</span>
+        </button>
+      </div>
     </div>
-    <div class="lang-toolbar">
-      <label class="lang-label" id="lang-label" for="ui-lang">Language</label>
-      <select id="ui-lang" class="field-control lang-select" aria-label="Language">
-        <option value="en">English</option>
-        <option value="es">Español</option>
-      </select>
+    <div class="search-toolbar" role="search">
+      <label class="visually-hidden" for="hub-search" id="search-label">Search</label>
+      <input
+        type="search"
+        id="hub-search"
+        class="hub-search"
+        autocomplete="off"
+        spellcheck="false"
+        enterkeyhint="search"
+      />
+      <div id="search-live" class="visually-hidden" aria-live="polite"></div>
     </div>
     <p class="window-hint" id="window-hint">Drag the title bar to move. Resize from any edge.</p>
   </header>

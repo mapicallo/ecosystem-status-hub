@@ -28,6 +28,9 @@ const BADGE_CLASS = {
 
 const STORAGE_KEY_CUSTOM = "customLinks";
 
+/** @type {{ links: any[]; meta: any } | null} */
+let lastPayload = null;
+
 /** @type {"en" | "es"} */
 let uiLang = "en";
 
@@ -106,7 +109,80 @@ async function loadUiLanguage() {
   uiLang = defaultLangFromNavigator();
 }
 
-function render(root, payload) {
+function updateMetaLine(meta) {
+  const metaLine = document.getElementById("meta-line");
+  if (!metaLine) return;
+  if (meta?.lastVerified) {
+    metaLine.hidden = false;
+    metaLine.textContent = t("meta.snapshot", { date: meta.lastVerified });
+  } else {
+    metaLine.hidden = true;
+    metaLine.textContent = "";
+  }
+}
+
+function setSearchLive(text) {
+  const el = document.getElementById("search-live");
+  if (el) el.textContent = text ?? "";
+}
+
+/** @param {any} item */
+function buildLinkRow(item) {
+  const row = document.createElement("div");
+  row.className = "link-row" + (item.isCustom ? " link-row--custom" : "");
+
+  const badge = document.createElement("span");
+  const bClass = BADGE_CLASS[item.sourceType] ?? "";
+  badge.className = `badge ${bClass}`.trim();
+  const bKey = badgeKeyForSourceType(item.sourceType);
+  badge.textContent = t(bKey);
+  badge.title = t(bKey);
+
+  const a = document.createElement("a");
+  a.href = item.url;
+  a.textContent = item.title;
+  a.target = "_blank";
+  a.rel = "noopener noreferrer";
+
+  const grow = document.createElement("div");
+  grow.className = "link-grow";
+  grow.append(badge, a);
+  row.appendChild(grow);
+
+  if (item.isCustom && item.customId) {
+    const actions = document.createElement("div");
+    actions.className = "link-actions";
+    const editBtn = document.createElement("button");
+    editBtn.type = "button";
+    editBtn.className = "btn btn-ghost";
+    editBtn.textContent = t("custom.edit");
+    editBtn.addEventListener("click", () => startEditCustom(item));
+    const delBtn = document.createElement("button");
+    delBtn.type = "button";
+    delBtn.className = "btn btn-danger";
+    delBtn.textContent = t("custom.remove");
+    delBtn.addEventListener("click", () => removeCustom(item.customId));
+    actions.append(editBtn, delBtn);
+    row.appendChild(actions);
+  }
+
+  return row;
+}
+
+function filterLinks(links, query) {
+  const q = String(query).trim().toLowerCase();
+  if (!q) return links;
+  return links.filter((item) => {
+    const fam = t(`family.${item.family}`).toLowerCase();
+    return (
+      fam.includes(q) ||
+      String(item.title).toLowerCase().includes(q) ||
+      String(item.url).toLowerCase().includes(q)
+    );
+  });
+}
+
+function renderAccordions(root, payload) {
   const { links, meta } = payload;
   const byFamily = groupByFamily(links);
   root.innerHTML = "";
@@ -133,54 +209,55 @@ function render(root, payload) {
     const body = document.createElement("div");
     body.className = "family-body";
     for (const item of items) {
-      const row = document.createElement("div");
-      row.className = "link-row" + (item.isCustom ? " link-row--custom" : "");
-
-      const badge = document.createElement("span");
-      const bClass = BADGE_CLASS[item.sourceType] ?? "";
-      badge.className = `badge ${bClass}`.trim();
-      const bKey = badgeKeyForSourceType(item.sourceType);
-      badge.textContent = t(bKey);
-      badge.title = t(bKey);
-
-      const a = document.createElement("a");
-      a.href = item.url;
-      a.textContent = item.title;
-      a.target = "_blank";
-      a.rel = "noopener noreferrer";
-
-      const grow = document.createElement("div");
-      grow.className = "link-grow";
-      grow.append(badge, a);
-      row.appendChild(grow);
-
-      if (item.isCustom && item.customId) {
-        const actions = document.createElement("div");
-        actions.className = "link-actions";
-        const editBtn = document.createElement("button");
-        editBtn.type = "button";
-        editBtn.className = "btn btn-ghost";
-        editBtn.textContent = t("custom.edit");
-        editBtn.addEventListener("click", () => startEditCustom(item));
-        const delBtn = document.createElement("button");
-        delBtn.type = "button";
-        delBtn.className = "btn btn-danger";
-        delBtn.textContent = t("custom.remove");
-        delBtn.addEventListener("click", () => removeCustom(item.customId));
-        actions.append(editBtn, delBtn);
-        row.appendChild(actions);
-      }
-
-      body.appendChild(row);
+      body.appendChild(buildLinkRow(item));
     }
     details.appendChild(body);
     root.appendChild(details);
   }
 
-  const metaLine = document.getElementById("meta-line");
-  if (meta?.lastVerified && metaLine) {
-    metaLine.hidden = false;
-    metaLine.textContent = t("meta.snapshot", { date: meta.lastVerified });
+  updateMetaLine(meta);
+  setSearchLive("");
+}
+
+function renderSearchResults(root, filtered, meta) {
+  root.innerHTML = "";
+  root.setAttribute("aria-busy", "false");
+
+  const status = document.createElement("p");
+  status.className = "search-results-meta";
+  if (filtered.length === 0) {
+    status.textContent = t("search.noResults");
+    setSearchLive(t("search.noResults"));
+  } else {
+    const line = t("search.resultsCount", { n: filtered.length });
+    status.textContent = line;
+    setSearchLive(line);
+  }
+  root.appendChild(status);
+
+  for (const item of filtered) {
+    const wrap = document.createElement("div");
+    wrap.className = "search-hit";
+    const fam = document.createElement("div");
+    fam.className = "search-hit-family";
+    fam.textContent = t(`family.${item.family}`);
+    wrap.appendChild(fam);
+    wrap.appendChild(buildLinkRow(item));
+    root.appendChild(wrap);
+  }
+
+  updateMetaLine(meta);
+}
+
+function redrawMain() {
+  const root = document.getElementById("root");
+  if (!root || !lastPayload) return;
+  const q = document.getElementById("hub-search")?.value?.trim() ?? "";
+  if (q) {
+    const filtered = filterLinks(lastPayload.links, q);
+    renderSearchResults(root, filtered, lastPayload.meta);
+  } else {
+    renderAccordions(root, lastPayload);
   }
 }
 
@@ -205,8 +282,10 @@ async function refreshDirectory() {
     if (!Array.isArray(data.links)) throw new Error("INVALID_DATA");
     const custom = await getCustomLinks();
     const merged = buildMergedList(data.links, custom);
-    render(root, { links: merged, meta: data.meta });
+    lastPayload = { links: merged, meta: data.meta };
+    redrawMain();
   } catch (e) {
+    lastPayload = null;
     let msg = t("error.generic");
     if (e instanceof Error) {
       if (e.message.startsWith("LOAD_HTTP:")) {
@@ -217,6 +296,7 @@ async function refreshDirectory() {
       }
     }
     renderError(root, msg);
+    setSearchLive("");
   }
 }
 
@@ -225,6 +305,25 @@ let customFormInitialized = false;
 
 /** @type {boolean} */
 let langSelectorInitialized = false;
+
+/** @type {boolean} */
+let searchBoxInitialized = false;
+
+function initSearchBox() {
+  const input = document.getElementById("hub-search");
+  if (!input || searchBoxInitialized) return;
+  searchBoxInitialized = true;
+  input.addEventListener("input", () => {
+    if (lastPayload) redrawMain();
+  });
+  input.addEventListener("keydown", (e) => {
+    if (e.key === "Escape") {
+      input.value = "";
+      if (lastPayload) redrawMain();
+      input.blur();
+    }
+  });
+}
 
 function showFormError(msg) {
   const el = document.getElementById("custom-form-error");
@@ -316,8 +415,11 @@ function applyStaticI18n() {
   const bar = document.getElementById("custom-links-label");
   if (bar) bar.textContent = t("custom.barLabel");
 
-  const ll = document.getElementById("lang-label");
-  if (ll) ll.textContent = t("lang.label");
+  const searchInput = document.getElementById("hub-search");
+  if (searchInput) searchInput.placeholder = t("search.placeholder");
+
+  const searchLab = document.getElementById("search-label");
+  if (searchLab) searchLab.textContent = t("search.label");
 
   const lf = document.getElementById("label-custom-family");
   if (lf) lf.textContent = t("custom.field.section");
@@ -452,6 +554,7 @@ async function load() {
   document.documentElement.lang = uiLang;
 
   initLangSelector();
+  initSearchBox();
   applyStaticI18n();
   setExtensionVersionLabel();
   initCustomLinksForm();

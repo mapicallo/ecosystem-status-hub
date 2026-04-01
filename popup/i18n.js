@@ -66,6 +66,20 @@ const MESSAGES = {
 
   "lang.label": { en: "Language", es: "Idioma" },
 
+  "search.label": { en: "Search links", es: "Buscar enlaces" },
+  "search.placeholder": {
+    en: "Search by name, URL, or section…",
+    es: "Buscar por nombre, URL o sección…",
+  },
+  "search.noResults": {
+    en: "No links match your search. Clear the box to see all sections.",
+    es: "Ningún enlace coincide. Borra el texto para ver todas las secciones.",
+  },
+  "search.resultsCount": {
+    en: "{n} matches",
+    es: "{n} coincidencias",
+  },
+
   "custom.sectionAria": {
     en: "Your custom links",
     es: "Tus enlaces personalizados",
