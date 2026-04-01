@@ -1,0 +1,16 @@
+{
+  "manifest_version": 3,
+  "name": "Ecosystem Status Hub",
+  "version": "0.1.0",
+  "description": "Curated links to official provider status pages and public Internet health signals. Does not monitor your network.",
+  "action": {
+    "default_title": "Ecosystem Status Hub",
+    "default_popup": "popup/popup.html"
+  },
+  "icons": {
+    "16": "icons/icon-16.png",
+    "32": "icons/icon-32.png",
+    "48": "icons/icon-48.png",
+    "128": "icons/icon-128.png"
+  }
+}
