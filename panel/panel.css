@@ -1,0 +1,82 @@
+@import url("../popup/popup.css");
+
+html,
+body.panel-body {
+  height: 100%;
+  margin: 0;
+}
+
+body.panel-body {
+  width: auto;
+  max-width: none;
+  max-height: none;
+  min-height: 100%;
+  min-width: 320px;
+  height: 100vh;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+}
+
+body.panel-body .header {
+  flex-shrink: 0;
+  padding-bottom: 8px;
+}
+
+.header-top {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.header-titles {
+  flex: 1;
+  min-width: 0;
+}
+
+.window-hint {
+  margin: 8px 0 0;
+  font-size: 10px;
+  color: var(--muted);
+  opacity: 0.9;
+}
+
+.close-btn {
+  flex-shrink: 0;
+  width: 32px;
+  height: 32px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  background: var(--surface);
+  color: var(--text);
+  font-size: 24px;
+  line-height: 1;
+  cursor: pointer;
+  padding: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: inherit;
+}
+
+.close-btn:hover {
+  background: var(--border);
+  color: var(--accent);
+}
+
+.close-btn:focus-visible {
+  outline: 2px solid var(--focus);
+  outline-offset: 2px;
+}
+
+body.panel-body .main {
+  flex: 1 1 auto;
+  min-height: 0;
+  max-height: none !important;
+  overflow-y: auto;
+}
+
+body.panel-body .footer {
+  flex-shrink: 0;
+}

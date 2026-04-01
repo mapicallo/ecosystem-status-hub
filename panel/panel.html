@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Ecosystem Status Hub</title>
+  <link rel="stylesheet" href="panel.css" />
+</head>
+<body class="panel-body">
+  <header class="header">
+    <div class="header-top">
+      <div class="header-titles">
+        <h1 class="title">Ecosystem Status Hub</h1>
+        <p class="tagline">Official status pages &amp; public Internet health signals</p>
+      </div>
+      <button type="button" class="close-btn" id="close-panel" aria-label="Close window" title="Close">
+        <span aria-hidden="true">×</span>
+      </button>
+    </div>
+    <p class="window-hint">Drag the title bar to move. Resize from any edge.</p>
+  </header>
+  <main id="root" class="main" aria-busy="true"></main>
+  <footer class="footer">
+    <p class="disclaimer">
+      Directory of public links only. The authoritative source is always each provider.
+      This extension does not access or monitor your network.
+    </p>
+    <p class="meta" id="meta-line" hidden></p>
+  </footer>
+  <script src="../popup/popup.js" type="module"></script>
+</body>
+</html>

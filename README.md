@@ -8,6 +8,12 @@ Browser extension (Manifest V3) with **curated links** to official provider stat
 2. Enable **Developer mode**.
 3. Click **Load unpacked** and select this folder (`ecosystem-status-hub`).
 
+## Floating panel
+
+Click the toolbar icon to open a **separate window** (not the old in-toolbar popup). You can **move** it by the native window title bar, **resize** it from the edges, and **close** it with the window close control or the **×** button in the header. Links still open in your normal browser tabs (`target="_blank"`), so the hub stays open.
+
+If the panel is already open, the toolbar icon **focuses** that window instead of opening a second one.
+
 ## Data
 
 - Link directory: [`data/links.json`](data/links.json) (`id`, `family`, `title`, `url`, `sourceType`).

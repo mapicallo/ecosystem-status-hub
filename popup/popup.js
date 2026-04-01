@@ -132,3 +132,7 @@ async function load() {
 }
 
 load();
+
+document.getElementById("close-panel")?.addEventListener("click", () => {
+  window.close();
+});
